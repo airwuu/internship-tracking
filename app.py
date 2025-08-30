@@ -18,7 +18,7 @@ if not app.config['SQLALCHEMY_DATABASE_URI']:
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
- 
+
 class Application(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     company = db.Column(db.String(100), nullable=False)
@@ -39,7 +39,7 @@ STATUS_STAGES = ['Start', 'Applied', 'Online Assessment', 'Technical Screen', 'F
 STATUS_COLORS = {'Start': '#45475a', 'Applied': '#89b4fa', 'Online Assessment': '#fab387', 'Technical Screen': '#a6e3a1', 'Final Round': '#f9e2af', 'Offer': '#cba6f7', 'Offer Accepted': '#94e2d5', 'Offer Declined': '#eba0ac', 'Rejected': '#f38ba8', 'Withdrew': '#6c7086'}
 
 
-# --- UPDATED: Sankey Diagram Logic ---
+# --- Sankey Diagram Logic is unchanged ---
 def create_sankey_data():
     """Processes database history to generate data for the Sankey diagram."""
     history = StatusHistory.query.all()
@@ -52,7 +52,6 @@ def create_sankey_data():
     
     links = df.groupby(['source', 'target']).sum().reset_index()
 
-    # This is the list of original, clean node labels
     all_nodes = list(pd.unique(links[['source', 'target']].values.ravel('K')))
     for stage in STATUS_STAGES:
         if stage not in all_nodes:
@@ -63,7 +62,6 @@ def create_sankey_data():
     target_totals = links.groupby('target')['value'].sum()
     node_totals = pd.concat([source_totals, target_totals], axis=1).max(axis=1).fillna(0).astype(int)
 
-    # These are the formatted labels for display
     formatted_labels = []
     for node in all_nodes:
         total = node_totals.get(node, 0)
@@ -82,13 +80,23 @@ def create_sankey_data():
     node_colors = [STATUS_COLORS.get(node, '#888888') for node in all_nodes]
     
     sankey_nodes = {
-        'label': formatted_labels,  # For display
-        'clean_label': all_nodes,   # NEW: For JavaScript logic
+        'label': formatted_labels,
+        'clean_label': all_nodes,
         'color': node_colors
     }
     
     return {'nodes': sankey_nodes, 'links': sankey_links}
-# --- All other routes (index, edit, delete, etc.) are unchanged ---
+
+# --- UPDATED: Load personal links ---
+def load_links():
+    """Loads personal links from config.json."""
+    try:
+        with open('config.json') as f:
+            return json.load(f)
+    except (IOError, json.JSONDecodeError):
+        return {}
+
+# --- UPDATED: Index route to include links ---
 @app.route('/')
 def index():
     search_query = request.args.get('search', '').strip()
@@ -108,8 +116,10 @@ def index():
         applications_query = applications_query.order_by(Application.date_applied.desc())
     applications = applications_query.all()
     sankey_json = json.dumps(create_sankey_data()) if create_sankey_data() else '{}'
-    return render_template('index.html', applications=applications, sankey_data=sankey_json, status_stages=STATUS_STAGES[1:], search_query=search_query, sort_by=sort_by, filter_status=filter_status)
+    personal_links = load_links() # Load the links
+    return render_template('index.html', applications=applications, sankey_data=sankey_json, status_stages=STATUS_STAGES[1:], search_query=search_query, sort_by=sort_by, filter_status=filter_status, personal_links=personal_links)
 
+# --- All other routes (edit, delete, etc.) are unchanged ---
 @app.route('/edit/<int:app_id>', methods=['GET', 'POST'])
 def edit_application(app_id):
     app_to_edit = Application.query.get_or_404(app_id)

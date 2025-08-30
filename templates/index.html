@@ -55,13 +55,44 @@
         .toggle-note { font-size: 0.8em; color: var(--sky); cursor: pointer; display: block; margin-top: 5px; font-weight: bold; }
         .toggle-note:hover { text-decoration: underline; }
         .update-status-form select { width: 100%; cursor: pointer; }
+        /* --- NEW STYLES for personal links --- */
+        .personal-links { display: flex; justify-content: center; gap: 15px; margin-bottom: 20px; }
+        .link-item { display: flex; align-items: center; background-color: var(--mantle); padding: 8px 15px; border-radius: 8px; border: 1px solid var(--surface0); }
+        .link-item a { margin-right: 10px; text-decoration: none; font-weight: bold; }
+        .copy-btn { background-color: var(--surface1); color: var(--text); border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
+        .copy-btn:hover { background-color: var(--surface2); }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>CS Internship Pipeline</h1>
+        
+        {% if personal_links %}
+        <div class="personal-links">
+            {% if personal_links.linkedin %}
+            <div class="link-item">
+                <a href="{{ personal_links.linkedin }}" target="_blank">LinkedIn</a>
+                <button class="copy-btn" onclick="copyToClipboard('{{ personal_links.linkedin }}')">Copy</button>
+            </div>
+            {% endif %}
+            {% if personal_links.github %}
+            <div class="link-item">
+                <a href="{{ personal_links.github }}" target="_blank">GitHub</a>
+                <button class="copy-btn" onclick="copyToClipboard('{{ personal_links.github }}')">Copy</button>
+            </div>
+            {% endif %}
+            {% if personal_links.personal_website %}
+            <div class="link-item">
+                <a href="{{ personal_links.personal_website }}" target="_blank">Website</a>
+                <button class="copy-btn" onclick="copyToClipboard('{{ personal_links.personal_website }}')">Copy</button>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
         <div id="sankey-diagram"></div>
         <hr style="margin: 40px 0; border-color: var(--surface0);">
+        
         <h2>Add New Application</h2>
         <div class="form-section">
             <form action="{{ url_for('add_application') }}" method="post" class="form-row" style="gap: 10px;">
@@ -71,6 +102,7 @@
                 <button type="submit">Add Application</button>
             </form>
         </div>
+        
         <h2>Current Applications</h2>
         <div class="form-section">
             <form action="{{ url_for('index') }}" method="get" class="controls-form">
@@ -84,6 +116,7 @@
                 <button type="button" onclick="window.location.href='{{ url_for('index') }}'">Clear All</button>
             </form>
         </div>
+        
         <table>
             <thead>
                 <tr>
@@ -136,7 +169,17 @@
             </tbody>
         </table>
     </div>
+
     <script>
+        // --- NEW: Clipboard function ---
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Copied to clipboard!');
+            }, function(err) {
+                alert('Could not copy text: ', err);
+            });
+        }
+
         function parseJsonData(jsonString) { try { return JSON.parse(jsonString); } catch (e) { console.error("Failed to parse JSON data:", e); return null; } }
         const sankeyData = parseJsonData('{{ sankey_data|safe }}');
 
@@ -145,7 +188,6 @@
             const data = [{
                 type: "sankey",
                 orientation: "h",
-                // This 'arrangement' property helps prevent nodes from overlapping
                 arrangement: "snap",
                 node: {
                     pad: 15,
@@ -165,29 +207,17 @@
 
             Plotly.newPlot(plotDiv, data, layout);
 
-            // --- CORRECTED: Event listener logic ---
             plotDiv.on('plotly_click', function(data) {
                 const point = data.points[0];
-
-                // Check if a LINK was clicked. The event data for a link has a 'source' and 'target'
-                // inside an 'arrangement' object, or directly on the point itself. We will check for the link's value.
                 if (point && point.value !== undefined && point.label === undefined) {
-
-                    // The event data gives us the source and target LABELS directly
                     const targetLabel = point.target.label;
-
-                    // The labels might still have the number and <br> tag, so we clean them up.
                     const cleanTargetLabel = targetLabel.split(" ").pop();
-
-                    // Safely get the current URL parameters
                     const currentSearch = {{ search_query|tojson }};
                     const currentSort = {{ sort_by|tojson }};
-
                     const params = new URLSearchParams();
                     params.set('filter_status', cleanTargetLabel);
                     params.set('sort_by', currentSort);
                     params.set('search', currentSearch);
-
                     window.location.search = params.toString();
                 }
             });
@@ -196,14 +226,11 @@
             document.getElementById('sankey-diagram').innerHTML = '<p style="text-align:center; color:#a6adc8;">Add applications to see your pipeline visualization.</p>';
         }
 
-        // This function is unchanged
         function toggleNote(element) {
             const noteContent = element.previousElementSibling;
             noteContent.classList.toggle('expanded');
             element.textContent = noteContent.classList.contains('expanded') ? 'Show less' : 'Show more';
         }
     </script>
-</body>
-</html>
 </body>
 </html>

@@ -2,7 +2,7 @@
 
 # This script automates the setup and startup of the Internship Tracker application.
 
-# --- NEW: Check for the .env file before doing anything else ---
+# --- Check for .env file ---
 if [ ! -f ".env" ]; then
     echo "================================================================="
     echo "‼️  SETUP REQUIRED: .env file not found!"
@@ -23,8 +23,31 @@ if [ ! -f ".env" ]; then
     echo ""
     echo "After you've done this, run this script again: ./start.sh"
     echo "================================================================="
-    # Exit the script so the user can perform the setup.
     exit 1
+fi
+
+# --- NEW: Check for config.json and prompt for links ---
+CONFIG_FILE="config.json"
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "================================================================="
+    echo "‼️  SETUP REQUIRED: config.json file not found!"
+    echo "================================================================="
+    echo "Creating a new config.json file for your personal links."
+    echo "Please provide the following URLs (leave blank to skip):"
+    echo ""
+    read -p "Enter your LinkedIn URL: " linkedin_url
+    read -p "Enter your GitHub URL: " github_url
+    read -p "Enter your Personal Website URL: " website_url
+
+    # Create the JSON file
+    echo "{" > $CONFIG_FILE
+    echo "    \"linkedin\": \"$linkedin_url\"," >> $CONFIG_FILE
+    echo "    \"github\": \"$github_url\"," >> $CONFIG_FILE
+    echo "    \"personal_website\": \"$website_url\"" >> $CONFIG_FILE
+    echo "}" >> $CONFIG_FILE
+    echo "================================================================="
+    echo "✅ config.json created successfully!"
+    echo "================================================================="
 fi
 
 # Define the name of the virtual environment directory
