@@ -27,7 +27,7 @@ Follow these steps to get the application running on your local machine.
 First, clone the project to your local machine using Git.
 
 ```bash
-git clone [https://github.com/airwuu/internship-tracking.git](https://github.com/airwuu/internship-tracking.git)
+git clone https://github.com/airwuu/internship-tracking.git
 cd internship-tracking
 ```
 ### 2. Connect to a database (supabase)
