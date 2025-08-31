@@ -202,6 +202,7 @@
                 sankeyData.links.source.forEach((source, i) => {
                     if (source === startNodeIndex) {
                         transparentLinkColors[i] = 'rgba(0, 0, 0, 0)'; // Use the transparent color array
+			sankeyData.links.value[i] = 0;
                     }
                 });
             }
@@ -225,7 +226,7 @@
             }];
         
             const layout = {
-                title: { text: "Application Funnel", font: { color: '#cdd6f4' } },
+                title: { text: "Applications", font: { color: '#cdd6f4' } },
                 font: { size: 12, color: '#cdd6f4' },
                 plot_bgcolor: '#1e1e2e',
                 paper_bgcolor: '#1e1e2e'

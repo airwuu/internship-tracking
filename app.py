@@ -35,8 +35,8 @@ class StatusHistory(db.Model):
     change_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
 # --- Constants are unchanged ---
-STATUS_STAGES = ['Start', 'Applied', 'Online Assessment', 'Technical Screen', 'Final Round', 'Offer', 'Offer Accepted', 'Offer Declined', 'Rejected', 'Withdrew']
-STATUS_COLORS = {'Start': '#45475a', 'Applied': '#89b4fa', 'Online Assessment': '#fab387', 'Technical Screen': '#a6e3a1', 'Final Round': '#f9e2af', 'Offer': '#cba6f7', 'Offer Accepted': '#94e2d5', 'Offer Declined': '#eba0ac', 'Rejected': '#f38ba8', 'Withdrew': '#6c7086'}
+STATUS_STAGES = ['Start', 'Applied', 'Online Assessment', 'Technical Screen', 'Behavioral Screen', 'Offer', 'Offer Accepted', 'Offer Declined', 'Rejected', 'Withdrew']
+STATUS_COLORS = {'Start': '#45475a', 'Applied': '#89b4fa', 'Online Assessment': '#fab387', 'Technical Screen': '#a6e3a1', 'Behavioral Screen': '#f9e2af', 'Offer': '#cba6f7', 'Offer Accepted': '#94e2d5', 'Offer Declined': '#eba0ac', 'Rejected': '#f38ba8', 'Withdrew': '#6c7086'}
 
 
 # --- Sankey Diagram Logic is unchanged ---
@@ -87,7 +87,6 @@ def create_sankey_data():
     
     return {'nodes': sankey_nodes, 'links': sankey_links}
 
-# --- UPDATED: Load personal links ---
 def load_links():
     """Loads personal links from config.json."""
     try:
@@ -96,7 +95,6 @@ def load_links():
     except (IOError, json.JSONDecodeError):
         return {}
 
-# --- UPDATED: Index route to include links ---
 @app.route('/')
 def index():
     search_query = request.args.get('search', '').strip()
@@ -119,7 +117,6 @@ def index():
     personal_links = load_links() # Load the links
     return render_template('index.html', applications=applications, sankey_data=sankey_json, status_stages=STATUS_STAGES[1:], search_query=search_query, sort_by=sort_by, filter_status=filter_status, personal_links=personal_links)
 
-# --- All other routes (edit, delete, etc.) are unchanged ---
 @app.route('/edit/<int:app_id>', methods=['GET', 'POST'])
 def edit_application(app_id):
     app_to_edit = Application.query.get_or_404(app_id)
