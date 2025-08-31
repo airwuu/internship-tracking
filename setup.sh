@@ -48,7 +48,7 @@ if [ ! -f "$CONFIG_FILE" ]; then
     echo "================================================================="
 fi
 
-echo "Finished setup, run `docker compose up` to begin app"
+echo "Finished setup"
 # Define the name of the virtual environment directory
 # VENV_DIR="venv"
 
