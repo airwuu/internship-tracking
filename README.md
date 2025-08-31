@@ -16,7 +16,7 @@ will polish when I have more time, installation instructions down below if you w
 ## Prerequisites
 
 -   Git
--   Python 3
+-   Docker and Docker-Compose
 
 ## Getting Started
 
@@ -36,7 +36,9 @@ We want to connect a database, we can use supabase free plan for this. Sign up f
 cp example.env .env
 ```
 ### 3. Run project
-everytime you want to run the project, run `./start.sh` in your terminal and follow the link to the website. 
+Optionally run `./setup.sh` to create a config file for easy to copy links for applications.
+
+To run the project, run `docker compose up` in your terminal and follow the link to the website (http://0.0.0.0:5000). 
 ```bash
-./start.sh
+docker compose up
 ```
